@@ -28,6 +28,13 @@ if sudo -u postgres ${PG_BIN}/pg_isready -p ${DB_PORT} > /dev/null 2>&1; then
     if [ -f "db_connection.txt" ]; then
         echo "Or use: $(cat db_connection.txt)"
     fi
+
+    # Apply schema/indexes/seed data on every start (idempotent).
+    if [ -f "provision.sh" ]; then
+        echo ""
+        echo "Applying schema + seed provisioning..."
+        bash provision.sh || echo "⚠ Provisioning failed; check provision.sh output"
+    fi
     
     echo ""
     echo "Script stopped - server already running."
@@ -154,3 +161,10 @@ echo "To use with Node.js viewer, run: source db_visualizer/postgres.env"
 echo "To connect to the database, use one of the following commands:"
 echo "psql -h localhost -U ${DB_USER} -d ${DB_NAME} -p ${DB_PORT}"
 echo "$(cat db_connection.txt)"
+
+# Apply schema/indexes/seed data (idempotent).
+if [ -f "provision.sh" ]; then
+    echo ""
+    echo "Applying schema + seed provisioning..."
+    bash provision.sh || echo "⚠ Provisioning failed; check provision.sh output"
+fi
